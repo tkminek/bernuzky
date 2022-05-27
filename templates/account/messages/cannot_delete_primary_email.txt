@@ -1,2 +1,2 @@
 {% load i18n %}
-{% blocktrans %}You cannot remove your primary e-mail address ({{email}}).{% endblocktrans %}
+{% blocktrans %}Nemůžete odstranit vaši hlavní emaiilovou adresu ({{email}}).{% endblocktrans %}
