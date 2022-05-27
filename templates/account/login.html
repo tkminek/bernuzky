@@ -15,15 +15,12 @@
 
           <p>{% blocktrans %}Pokud tady ještě nemáte účet,
             <a href="{{ signup_url }}">založit účet.</a>{% endblocktrans %}</p>
-
-
           <form class="login" method="POST" action="{% url 'account_login' %}">
             {% csrf_token %}
             {{ form|crispy }}
             {% if redirect_field_value %}
             <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
             {% endif %}
-            <a class="btn btn-default" href="{% url 'account_reset_password' %}">{% trans "Zapoměli jste heslo?" %}</a>
             <button class="btn btn-primary" type="submit">{% trans "Přihlásit se" %}</button>
           </form>
           </div>

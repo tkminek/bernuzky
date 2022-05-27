@@ -45,12 +45,7 @@
             </td>
         </tr>
         {% endfor %}
-        {% if object.coupon %}
-        <tr>
-            <td colspan="4"><b>Coupon</b></td>
-            <td><b>-{{ object.coupon.amount }} Kč</b></td>
-        </tr>
-        {% endif %}
+
         {% if object.get_total %}
         <tr>
             <td colspan="4"><b>Celková částka</b></td>

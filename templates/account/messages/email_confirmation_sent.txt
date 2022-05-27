@@ -1,2 +1,0 @@
-{% load i18n %}
-{% blocktrans %}Potvrzovací email byl poslán na váš účet {{email}}.{% endblocktrans %}

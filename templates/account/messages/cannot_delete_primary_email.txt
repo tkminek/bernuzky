@@ -1,2 +1,0 @@
-{% load i18n %}
-{% blocktrans %}Nemůžete odstranit vaši hlavní emaiilovou adresu ({{email}}).{% endblocktrans %}

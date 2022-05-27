@@ -1,2 +1,0 @@
-{% load i18n %}
-{% blocktrans %}Hlavní emailová adresa nastavena.{% endblocktrans %}
