@@ -13,8 +13,7 @@ from django.utils import timezone
 from django.views.generic import ListView, DetailView, View
 
 from .forms import CheckoutForm, CouponForm, RefundForm, PaymentForm
-from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile
-
+from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile, CATEGORY_CHOICES
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
@@ -347,8 +346,15 @@ class PaymentView(View):
 
 class HomeView(ListView):
     model = Item
-    paginate_by = 10
     template_name = "home.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        context['CATEGORY_CHOICES'] = CATEGORY_CHOICES
+        if self.request.GET:
+            context['object_list'] = Item.objects.filter(category__contains=self.request.GET["category"])
+        return context
+
 
 
 class OrderSummaryView(LoginRequiredMixin, View):
@@ -382,20 +388,18 @@ def add_to_cart(request, slug):
         order = order_qs[0]
         # check if the order item is in the order
         if order.items.filter(item__slug=item.slug).exists():
-            order_item.quantity += 1
-            order_item.save()
-            messages.info(request, "This item quantity was updated.")
+            messages.info(request, "Tento produkt už v nákupním košíku máš.")
             return redirect("core:order-summary")
         else:
             order.items.add(order_item)
-            messages.info(request, "This item was added to your cart.")
+            messages.info(request, "Tento produkt byl přidán do nákupního košíku.")
             return redirect("core:order-summary")
     else:
         ordered_date = timezone.now()
         order = Order.objects.create(
             user=request.user, ordered_date=ordered_date)
         order.items.add(order_item)
-        messages.info(request, "This item was added to your cart.")
+        messages.info(request, "Tento produkt byl přidán do nákupního košíku.")
         return redirect("core:order-summary")
 
 
@@ -417,13 +421,13 @@ def remove_from_cart(request, slug):
             )[0]
             order.items.remove(order_item)
             order_item.delete()
-            messages.info(request, "This item was removed from your cart.")
+            messages.info(request, "Tento produkt byl odstraněn z nákupního košíku.")
             return redirect("core:order-summary")
         else:
-            messages.info(request, "This item was not in your cart")
+            messages.info(request, "Tento produkt ještě nebyl v nákupního košíku.")
             return redirect("core:product", slug=slug)
     else:
-        messages.info(request, "You do not have an active order")
+        messages.info(request, "Nemáte aktivní objednávku.")
         return redirect("core:product", slug=slug)
 
 
