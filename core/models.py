@@ -1,9 +1,7 @@
 from django.db.models.signals import post_save
 from django.conf import settings
 from django.db import models
-from django.db.models import Sum
 from django.shortcuts import reverse
-from django_countries.fields import CountryField
 
 
 CATEGORY_CHOICES = (
@@ -24,8 +22,6 @@ PAYMENT_CHOICES = (
 
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    stripe_customer_id = models.CharField(max_length=50, blank=True, null=True)
-    one_click_purchasing = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
@@ -91,11 +87,9 @@ class Order(models.Model):
     start_date = models.DateTimeField(auto_now_add=True)
     ordered_date = models.DateTimeField()
     ordered = models.BooleanField(default=False)
-    address = models.ForeignKey('Address', on_delete=models.SET_NULL, blank=True, null=True)
-    payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return self.user.username
+        return "ID: "+str(self.id) + " by "+self.user.username
 
     def get_total(self):
         total = 0
@@ -105,22 +99,25 @@ class Order(models.Model):
 
 
 class Address(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    street_address = models.CharField(max_length=100)
-    country = CountryField(multiple=False)
-    zip = models.CharField(max_length=100)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
+    name = models.CharField(max_length=100,  blank=True, null=True)
+    surname = models.CharField(max_length=100,  blank=True, null=True)
+    email = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    street_address = models.CharField(max_length=100, blank=True, null=True)
+    street_number = models.CharField(max_length=100, blank=True, null=True)
+    zip = models.CharField(max_length=10, blank=True, null=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username},{self.street_adress}"
-
-    class Meta:
-        verbose_name_plural = 'Addresses'
+        return f"user:{self.name}, street:{self.street_address}"
 
 
 class Payment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     payment_type = models.CharField(choices=PAYMENT_CHOICES, max_length=2)
+    order = models.ForeignKey('Order', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.user.username

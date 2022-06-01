@@ -1,6 +1,3 @@
-import random
-import string
-
 import stripe
 from django.conf import settings
 from django.contrib import messages
@@ -12,7 +9,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, View
 
-from .forms import CheckoutForm
+from .forms import PaymentForm, AddressForm
 from .models import Item, OrderItem, Order, Address, Payment, UserProfile, CATEGORY_CHOICES
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -33,15 +30,30 @@ def is_valid_form(values):
 
 
 class CheckoutView(View):
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
-        form = CheckoutForm()
+        pay_form = PaymentForm()
+        address_form = AddressForm()
         context = {
-            'form': form,
+            'pay_form': pay_form,
+            'address_form': address_form,
             'order': order,
         }
-
         return render(self.request, "checkout.html", context)
+
+    def post(self, request, *args, **kwargs):
+        order = Order.objects.get(user=self.request.user, ordered=False)
+        address_form = AddressForm(request.POST)
+        pay_form = PaymentForm(request.POST)
+        if address_form.is_valid() and pay_form.is_valid():
+            cleaned_data_a = address_form.cleaned_data
+            cleaned_data_a["order"] = order
+            cleaned_data_a["user"] = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
+            address_model = Address(**cleaned_data_a)
+            address_model.save()
+            cleaned_data_p = address_form.cleaned_data
+
+            return redirect("/")
 
 
 class HomeView(ListView):
@@ -65,7 +77,7 @@ class OrderSummaryView(LoginRequiredMixin, View):
             }
             return render(self.request, 'order_summary.html', context)
         except ObjectDoesNotExist:
-            messages.warning(self.request, "You do not have an active order")
+            messages.warning(self.request, "Zatím nemáte zádný produkt v košíku.")
             return redirect("/")
 
 
@@ -151,15 +163,14 @@ def remove_single_item_from_cart(request, slug):
                 order_item.save()
             else:
                 order.items.remove(order_item)
-            messages.info(request, "This item quantity was updated.")
+            messages.info(request, "Počet tohoto produktu byl změnen v objednávce.")
             return redirect("core:order-summary")
         else:
-            messages.info(request, "This item was not in your cart")
+            messages.info(request, "Tento produkt ještě nebyl v nákupního košíku.")
             return redirect("core:product", slug=slug)
     else:
-        messages.info(request, "You do not have an active order")
+        messages.info(request, "Nemáte nic v košíku.")
         return redirect("core:product", slug=slug)
-
 
 
 
