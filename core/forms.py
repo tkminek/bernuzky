@@ -3,9 +3,13 @@ from .models import *
 from django.forms import ModelForm
 
 
-class PaymentForm(forms.Form):
-    payment_option = forms.ChoiceField(
-        widget=forms.RadioSelect, choices=PAYMENT_CHOICES)
+class PaymentForm(ModelForm):
+    class Meta:
+        model = Payment
+        exclude = ['user', 'order']
+        widgets = {
+                "name": forms.RadioSelect(choices=PAYMENT_CHOICES),
+            }
 
 
 class AddressForm(ModelForm):

@@ -14,12 +14,7 @@
                 <h3>Dodací údaje</h3>
                 {{  address_form|crispy }}
                 <h3>Možnosti platby</h3>
-                {% for value, name in pay_form.fields.payment_option.choices %}
-                <div class="custom-control custom-radio">
-                  <input id="{{ name }}" name="payment_option" value="{{ value }}" type="radio" class="custom-control-input" required>
-                  <label class="custom-control-label" for="{{ name }}">{{ name }}</label>
-                </div>
-                {% endfor %}
+                {{  pay_form|crispy }}
               </div>
 
               <hr class="mb-4">

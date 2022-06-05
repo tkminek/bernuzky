@@ -51,8 +51,11 @@ class CheckoutView(View):
             cleaned_data_a["user"] = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
             address_model = Address(**cleaned_data_a)
             address_model.save()
-            cleaned_data_p = address_form.cleaned_data
-
+            cleaned_data_p = pay_form.cleaned_data
+            cleaned_data_p["order"] = order
+            cleaned_data_p["user"] = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
+            pay_model = Payment(**cleaned_data_p)
+            pay_model.save()
             return redirect("/")
 
 
